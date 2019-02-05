@@ -1,0 +1,24 @@
+Package: robinhoodQF
+Type: Package
+Title: Quantitative Financial Analytics and Visualization Framework
+Version: 0.1.0
+Authors@R: person("Daniel", "Kovtun", email = "quantumfusetrader@gmail.com",
+                  role = c("aut", "cre"))
+Description: Quantfuse provides methods for retail traders to augment their strategies with quantitative 
+    analytics and financial data visualization. Quantfuse allows traders to enhance
+    their existing portfolio management software by providing an improved interface
+    to equity, cryptocurrency, and derivatives markets. The package combines 
+    auth-based functionality and quantitative analytics to boost the capabilities 
+    of two popular exchanges: Robinhood and Coinbase. Collectively, with various 
+    front-end's built in shiny, quantfuse allows traders to build machine learning 
+    algorithms and quantitative models while removing the time-consuming task of
+    developing from scratch.
+Imports:
+    jsonlite,
+    XML,
+    xml2,
+    httr
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.1.1.9000
