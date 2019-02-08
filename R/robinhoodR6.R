@@ -201,9 +201,65 @@ Account <- R6::R6Class(
 ##################
 # Convert to R6 ##
 
+
+#' Get order history
+#'
+#' Retrieve all transation history in data.frame
 #' @param account Initialzied instance of Account class
-get_robinhood_individual_PL<-function(account){
-  orders<-rh_getRecentOrders(account$user$authToken)
+rh_order_history <- function(account) {
+  header<-account$user$authHeader
+  Price<-NULL
+  State<-NULL
+  Shares<-NULL
+  Ticker<-NULL
+  Type<-NULL
+  cumulative_quantity<-NULL
+  Trigger<-NULL
+  last_transacted<-NULL
+  updated<-NULL
+  created<-NULL
+  avg_price<-NULL
+  stop_price<-NULL
+  response_category<-NULL
+  NEXTURL<-"https://api.robinhood.com/orders/"
+  while(is.null(NEXTURL)!=T){
+    res <- httr::GET(NEXTURL, httr::add_headers(.headers=header))
+    NEXTURL<-httr::content(res)$`next`
+
+
+    for (result in httr::content(res)$results) {
+      instrumentResponse <- httr::GET(result$url, httr::add_headers(.headers=header))
+      instrumentInfoResponse <- httr::GET(httr::content(instrumentResponse)$instrument, httr::add_headers(.headers=header))
+      State<-c(State,result$state)
+      if(result$state=="filled"){
+        if(result$response_category=="success"||result$response_category=="unknown"){
+
+
+          Ticker<-c(Ticker,httr::content(instrumentInfoResponse)$symbol)
+          Price<-c(Price,result$price)
+
+          Shares<-c(Shares,result$quantity)
+          Type<-c(Type,result$side)
+          last_transacted<-c(last_transacted,result$last_transaction_at)
+          updated<-c(updated,result$updated_at)
+          created<-c(created,result$created_at)
+          avg_price<-c(avg_price,result$average_price)
+          stop_price<-c(stop_price,result$stop_price)
+          response_category<-c(response_category,result$response_category)
+          cumulative_quantity<-c(cumulative_quantity,result$cumulative_quantity)
+          Trigger<-c(Trigger,result$trigger)
+
+        }
+
+      }
+
+    }
+  }
+
+  Price<-avg_price
+  Date<-last_transacted
+  orders<-data.frame(Type=Type,Ticker=Ticker,Price=Price,Shares=Shares,Date=Date)
+
   tx_DF<-orders
   tx_DF$Type<-as.character(tx_DF$Type)
   tx_DF$Date<-as.Date(as.character(tx_DF$Date))
@@ -246,7 +302,7 @@ get_robinhood_individual_PL<-function(account){
   individual_pl$Shares<-abs(individual_pl$Shares)
   colnames(individual_pl)[4]<-"Profit/Loss"
 
-  total_equity<-as.numeric(rh_getPortfolioEquity(account$user$authToken,account$user$accountNumber))
+  total_equity<-as.numeric(rh_getPortfolioEquity(account))
   equities<-sum(current_positions$Market.Value)
   cash<-total_equity-equities
   tickers<-c("CASH",tickers_owned)
@@ -254,15 +310,20 @@ get_robinhood_individual_PL<-function(account){
 
 
   allocation <- data.frame(value = market_values,
-                                          Group = tickers) %>%
+                           Group = tickers) %>%
     # factor levels need to be the opposite order of the cumulative sum of the values
     mutate(Group = factor(Group, levels = rev(tickers)),
            label = paste0(Group, " ", round(value / sum(value) * 100, 1), "%"))
 
-  return(list(individual_pl,current_positions,allocation,grouped_tx))
+  return(list(individual_pl,current_positions,allocation,grouped_tx,orders))
+
 }
 
-#'@param grouped_tx Transaction history grouped by ticker. Returned from get_robinhood_individual_pl(account)[[4]]
+
+
+
+
+#'@param grouped_tx Transaction history grouped by ticker. Returned from get_order_history(account)[[4]]
 #'@param ticker Ticker of interest to view timeline of historical trades
 get_robinhood_weekly_timeline<-function(grouped_tx,ticker){
 
