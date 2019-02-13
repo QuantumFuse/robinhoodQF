@@ -9,11 +9,9 @@
 Account
 }
 \arguments{
-\item{username_}{Robinhood login username. NOT email.}
-
-\item{password_}{Robinhood login password. Can only contain letters and numbers in plaintext.}
+\item{login}{Initialized R6 Login class instance.}
 }
 \description{
-Create an instance of the Account class.
+Create an instance of the R6 Account class.
 }
 \keyword{datasets}

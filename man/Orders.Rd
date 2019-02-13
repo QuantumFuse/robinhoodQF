@@ -12,6 +12,6 @@ Orders
 \item{account}{Initialzied instance of Account class}
 }
 \description{
-Retrieve all transation history and profit/loss summary.
+Create an instance of the R6 Orders Class. Retrieve all transation history and profit/loss summary.
 }
 \keyword{datasets}

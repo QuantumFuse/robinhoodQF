@@ -3,7 +3,7 @@
 \docType{data}
 \name{Login}
 \alias{Login}
-\title{get r AuthToken.}
+\title{Login R6 Class}
 \format{An object of class \code{R6ClassGenerator} of length 24.}
 \usage{
 Login
@@ -14,6 +14,6 @@ Login
 \item{password_}{Robinhood login password. Can only contain letters and numbers in plaintext.}
 }
 \description{
-Get oauth2 login token. Passed to all API requests.
+Create an instance of the R6 Login Class. Get oauth2 login token, account number, and other login params. Passed to all API requests.
 }
 \keyword{datasets}
