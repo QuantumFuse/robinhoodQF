@@ -1,3 +1,14 @@
+##### Required dependencies ################################################
+# library(httr)
+# library(jsonlite)
+# library(XML)
+# library(xml2)
+# library(magrittr)
+# library(R6)
+# library(plyr)
+
+##### Robinhood Functions ##################################################
+
 #' get r AuthToken.
 #'
 #' Get oauth2 login token. Passed to all API requests.
@@ -5,7 +16,7 @@
 #' @param password_ Robinhood login password. Can only contain letters and numbers in plaintext.
 Login <- R6::R6Class(
 
-  classname = 'Login', portable = FALSE,
+  classname = 'Login', portable = F,
 
   public = list(
 
@@ -57,7 +68,7 @@ Login <- R6::R6Class(
 #' @param password_ Robinhood login password. Can only contain letters and numbers in plaintext.
 Account <- R6::R6Class(
 
-  classname = "Account", portable = FALSE,
+  classname = "Account",  inherit=Login, portable=F,
 
   public = list(
 
@@ -69,14 +80,16 @@ Account <- R6::R6Class(
     get_day_PnL = NULL,
     positionsList = NULL,
 
-    initialize = function(username, password){
+    initialize = function(login){
+        if (inherits(login,"Login")) {
+          user<<-login
 
-      user <<- Login$new(username_=username, password_=password)
+        }
       get_positions_list()
+      get_options_positions_table()
       positions <<- as.data.frame(do.call(rbind, lapply(positionsList, function(x) parse_position(x))))
 
-      get_options_positions_table()
-      #get_balances()
+      get_balances()
 
       get_day_PnL <<- function(){
         portfolioURL <- paste("https://api.robinhood.com/accounts/", user$accountNumber, "/portfolio/", sep = "")
@@ -106,6 +119,11 @@ Account <- R6::R6Class(
       instrumentInfo$ticker <- instrumentTicker
       instrumentInfo$name <- instrumentName
       return(instrumentInfo)
+    },
+    get_instrument_url = function(ticker){
+      res <- httr::GET(paste("https://api.robinhood.com/fundamentals/", ticker, "/",sep = ""), httr::add_headers(.headers=user$authHeader))
+      instrumentURL <- httr::content(res)$instrument
+      return(instrumentURL)
     }
 
   ),
@@ -172,13 +190,14 @@ Account <- R6::R6Class(
       idxOwned <- which(shares>0)
       positions <- positions[idxOwned, ]
       tickers <- rownames(positions)
-      quotes <- rh_quote(tickers)
-      prices <- quotes$last_extended_hours_trade_price
-      naPrices <- which(is.na(quotes$last_extended_hours_trade_price)==TRUE)
+      quotes <- as.numeric(lapply(tickers, function(x) rh_quote(x,header=user$authHeader)))
+
+      prices <- quotes
+      naPrices <- which(is.na(quotes)==TRUE)
 
       if(length(naPrices)>0){
-        newQuotes<-robinhoodr::rh_quote(tickers[naPrices])
-        prices[naPrices]<-newQuotes$last_trade_price
+        newQuotes<-as.numeric(lapply(tickers[naPrices], function(x) rh_quote(x,header=user$authHeader)))
+        prices[naPrices]<-newQuotes
       }
 
       shares<-shares[idxOwned]
@@ -198,300 +217,260 @@ Account <- R6::R6Class(
 
 )
 
-###New template for Orders class
 #' Orders R6 Class
 #'
-#' Create an instance of the Orders class.
-#' @param username_ Robinhood login username. NOT email.
-#' @param password_ Robinhood login password. Can only contain letters and numbers in plaintext.
+#' Retrieve all transation history and profit/loss summary.
+#' @param account Initialzied instance of Account class
 Orders <- R6::R6Class(
 
-  classname = "Orders", portable = FALSE,
+  classname = "Orders", portable = FALSE, inherit=Account,
 
   public = list(
 
-    #user = NULL,
     account = NULL,
     orders=NULL,
     options_orders=NULL,
-    get_trade_timeline=NULL,
-    get_order_history=NULL,
-    get_options_history=NULL,
     ticker=NULL,
-    # positions = NULL,
-    # portfolioEquity = NULL,
-    # balances = NULL,
-    # optionsPositions = NULL,
-    # get_day_PnL = NULL,
-    # positionsList = NULL,
+
+    initialize = function(account_instance){
+      if (inherits(account_instance,"Account")) {
+        account<<-account_instance
+
+      }
+      get_order_history()
+      get_options_history()
+    }
+  ),
+
+private=list(
+  get_order_history = function(){
+    header<-account$user$authHeader
+    Price<-NULL
+    State<-NULL
+    Shares<-NULL
+    Ticker<-NULL
+    Type<-NULL
+    cumulative_quantity<-NULL
+    Trigger<-NULL
+    last_transacted<-NULL
+    updated<-NULL
+    created<-NULL
+    avg_price<-NULL
+    stop_price<-NULL
+    response_category<-NULL
+    NEXTURL<-"https://api.robinhood.com/orders/"
+    while(is.null(NEXTURL)!=T){
+      res <- httr::GET(NEXTURL, httr::add_headers(.headers=header))
+      NEXTURL<-httr::content(res)$`next`
 
 
-    initialize = function(username, password){
-
-      #user <<- Login$new(username_=username, password_=password)
-      account_init<-Account$new
-      account_init<-Account$self
-      account_init<-account_init$new(username = username,password = password)
-      account_init$initialize(username = username,password = password)
-
-      account<<-account_init
+      for (result in httr::content(res)$results) {
+        instrumentResponse <- httr::GET(result$url, httr::add_headers(.headers=header))
+        instrumentInfoResponse <- httr::GET(httr::content(instrumentResponse)$instrument, httr::add_headers(.headers=header))
+        State<-c(State,result$state)
+        if(result$state=="filled"){
+          if(result$response_category=="success"||result$response_category=="unknown"){
 
 
-      #orders<<-get_order_history()
-      #options_orders<<-get_options_history()
+            Ticker<-c(Ticker,httr::content(instrumentInfoResponse)$symbol)
+            Price<-c(Price,result$price)
 
-
-
-    get_order_history<<-function(){
-      header<-account$user$authHeader
-      Price<-NULL
-      State<-NULL
-      Shares<-NULL
-      Ticker<-NULL
-      Type<-NULL
-      cumulative_quantity<-NULL
-      Trigger<-NULL
-      last_transacted<-NULL
-      updated<-NULL
-      created<-NULL
-      avg_price<-NULL
-      stop_price<-NULL
-      response_category<-NULL
-      NEXTURL<-"https://api.robinhood.com/orders/"
-      while(is.null(NEXTURL)!=T){
-        res <- httr::GET(NEXTURL, httr::add_headers(.headers=header))
-        NEXTURL<-httr::content(res)$`next`
-
-
-        for (result in httr::content(res)$results) {
-          instrumentResponse <- httr::GET(result$url, httr::add_headers(.headers=header))
-          instrumentInfoResponse <- httr::GET(httr::content(instrumentResponse)$instrument, httr::add_headers(.headers=header))
-          State<-c(State,result$state)
-          if(result$state=="filled"){
-            if(result$response_category=="success"||result$response_category=="unknown"){
-
-
-              Ticker<-c(Ticker,httr::content(instrumentInfoResponse)$symbol)
-              Price<-c(Price,result$price)
-
-              Shares<-c(Shares,result$quantity)
-              Type<-c(Type,result$side)
-              last_transacted<-c(last_transacted,result$last_transaction_at)
-              updated<-c(updated,result$updated_at)
-              created<-c(created,result$created_at)
-              avg_price<-c(avg_price,result$average_price)
-              stop_price<-c(stop_price,result$stop_price)
-              response_category<-c(response_category,result$response_category)
-              cumulative_quantity<-c(cumulative_quantity,result$cumulative_quantity)
-              Trigger<-c(Trigger,result$trigger)
-
-            }
+            Shares<-c(Shares,result$quantity)
+            Type<-c(Type,result$side)
+            last_transacted<-c(last_transacted,result$last_transaction_at)
+            updated<-c(updated,result$updated_at)
+            created<-c(created,result$created_at)
+            avg_price<-c(avg_price,result$average_price)
+            stop_price<-c(stop_price,result$stop_price)
+            response_category<-c(response_category,result$response_category)
+            cumulative_quantity<-c(cumulative_quantity,result$cumulative_quantity)
+            Trigger<-c(Trigger,result$trigger)
 
           }
 
         }
-      }
-
-      Price<-avg_price
-      Date<-last_transacted
-      orders<-data.frame(Type=Type,Ticker=Ticker,Price=Price,Shares=Shares,Date=Date)
-
-      tx_DF<-orders
-      tx_DF$Type<-as.character(tx_DF$Type)
-      tx_DF$Date<-as.Date(as.character(tx_DF$Date))
-
-      values<-NULL
-      grouped_tx_DF<-ddply(tx_DF,"Ticker",rbind)
-      grouped_tx_DF$Type<-as.character(grouped_tx_DF$Type)
-      grouped_tx_DF$Ticker<-as.character(grouped_tx_DF$Ticker)
-      grouped_tx_DF$Price<-as.numeric(as.character(grouped_tx_DF$Price))
-      grouped_tx_DF$Shares<-as.numeric(as.character(grouped_tx_DF$Shares))
-
-
-      for (i in 1:length(grouped_tx_DF$Type)){
-        if (grouped_tx_DF$Type[i]=="buy"){
-          order_type=-1
-        }
-        else {
-          order_type=1
-        }
-        grouped_tx_DF$Shares[i]<-grouped_tx_DF$Shares[i]*order_type
-        values[i]<-grouped_tx_DF$Price[i]*grouped_tx_DF$Shares[i]
 
       }
-      grouped_tx_DF<-cbind(grouped_tx_DF,values)
-      grouped_tx<-grouped_tx_DF
-      grouped_tx_DF<-ddply(grouped_tx_DF,"Ticker",numcolwise(sum))
-      tickers_owned<-grouped_tx_DF$Ticker[which(grouped_tx_DF$Shares!=0)]
-      shares_owned<-abs(grouped_tx_DF$Shares[which(grouped_tx_DF$Shares!=0)])
-
-      current_value<-NULL
-      last_price<-NULL
-      for (i in 1:length(tickers_owned)){
-        data<-rh_quote(tickers_owned[i],account)
-        last_price[i]<-data
-        current_value[i]<-last_price[i]*shares_owned[i]
-      }
-      current_positions<-data.frame(Ticker=tickers_owned,Shares=shares_owned,"Last Price"=last_price,"Market Value"=current_value)
-      individual_pl<-grouped_tx_DF
-      individual_pl$values[which(individual_pl$Shares!=0)]<-individual_pl$values[which(individual_pl$Shares!=0)]+current_positions$Market.Value
-      individual_pl$Shares<-abs(individual_pl$Shares)
-      colnames(individual_pl)[4]<-"Profit/Loss"
-
-      day_stats<-account$get_day_PnL()
-      total_equity<-as.numeric(day_stats$Equity)
-
-      equities<-sum(current_positions$Market.Value)
-      cash<-total_equity-equities
-      tickers<-c("CASH",tickers_owned)
-      market_values<-c(cash,current_positions$Market.Value)
-
-
-      allocation <- data.frame(value = market_values,
-                               Group = tickers) %>%
-        # factor levels need to be the opposite order of the cumulative sum of the values
-        mutate(Group = factor(Group, levels = rev(tickers)),
-               label = paste0(Group, " ", round(value / sum(value) * 100, 1), "%"))
-
-      return(list(individual_pl,current_positions,allocation,grouped_tx,orders))
     }
 
-      get_options_history <<- function(){
-        header <- account$user$authHeader
+    Price<-avg_price
+    Date<-last_transacted
+    orders<-data.frame(Type=Type,Ticker=Ticker,Price=Price,Shares=Shares,Date=Date)
 
-        Price<-NULL
-        Premium<-NULL
-        State<-NULL
-        Quantity<-NULL
-        Ticker<-NULL
-        Type<-NULL
-        cumulative_quantity<-NULL
-        Trigger<-NULL
-        last_transacted<-NULL
-        updated<-NULL
-        created<-NULL
-        avg_price<-NULL
-        stop_price<-NULL
-        response_category<-NULL
-        Direction<-NULL
-        NEXTURL<-"https://api.robinhood.com/options/orders/"
-        while(is.null(NEXTURL)!=T){
-          res <- httr::GET(NEXTURL, httr::add_headers(.headers=header))
-          NEXTURL<-httr::content(res)$`next`
+    tx_DF<-orders
+    tx_DF$Type<-as.character(tx_DF$Type)
+    tx_DF$Date<-as.Date(as.character(tx_DF$Date))
 
-          results<-httr::content(res)$results
-          for (i in 1:length(results)) {
-            result<-results[[i]]
+    values<-NULL
+    grouped_tx_DF<-ddply(tx_DF,"Ticker",rbind)
+    grouped_tx_DF$Type<-as.character(grouped_tx_DF$Type)
+    grouped_tx_DF$Ticker<-as.character(grouped_tx_DF$Ticker)
+    grouped_tx_DF$Price<-as.numeric(as.character(grouped_tx_DF$Price))
+    grouped_tx_DF$Shares<-as.numeric(as.character(grouped_tx_DF$Shares))
 
-            if(result$state=="filled"){
-              if(result$response_category=="success"||result$response_category=="unknown"){
-                State<-c(State,result$state)
 
-                Ticker<-c(Ticker,result$chain_symbol)
-                Price<-c(Price,result$price)
-                Premium<-c(Premium,result$premium)
-                Direction<-c(Direction,result$direction)
-                Quantity<-c(Quantity,result$quantity)
-                if (is.null(result$opening_strategy)){
-                  Type<-c(Type,result$closing_strategy)
-                }
-                else{
-                  Type<-c(Type,result$opening_strategy)
-                }
-                updated<-c(updated,result$updated_at)
-                created<-c(created,result$created_at)
-                response_category<-c(response_category,result$response_category)
-                Trigger<-c(Trigger,result$trigger)
-              }
-            }
-          }
-        }
-        Date<-updated
-        ORDERS<-data.frame(Type=Type,Ticker=Ticker,Price=Price,Premium=Premium,Quantity=Quantity,Date=Date,Direction=Direction)
-        orders<<-ORDERS
-        return(ORDERS)
+    for (i in 1:length(grouped_tx_DF$Type)){
+      if (grouped_tx_DF$Type[i]=="buy"){
+        order_type=-1
       }
-
-      ### If orders object exists, then can add method for retrieving weekly timeline directly from orders
-      get_trade_timeline <<- function(ticker,orders){
-
-        grouped_tx<-orders[[4]]
-        DF<-as.data.frame(grouped_tx)
-        tickers<-DF$Ticker
-        tickers<-as.character(tickers)
-        return_idx<-which(tickers==ticker)
-        DF<-DF[return_idx,]
-        dates<-as.character.Date(DF$Date)
-        ticker<-as.character(ticker)
-        buy_style<-c("color:green;")
-        sell_style<-c("color: red;")
-        price<-NULL
-        order_type<-NULL
-        group_style<-NULL
-        for (i in 1:length(dates)){
-          if(DF$Shares[i]<0){
-            order_type[i]<-"BUY"
-            price[i]<-round((DF$values[i]/DF$Shares[i]),digits=2)
-            group_style[i]<-buy_style
-
-          }
-          else{
-            order_type[i]<-"SELL"
-            price[i]<-round((DF$values[i]/DF$Shares[i]),digits=2)
-            group_style[i]<-sell_style
-          }
-        }
-        shares<-DF$Shares
-        shares<-abs(shares)
-        proceeds<-DF$values
-
-        content<-paste(order_type,": ",shares, "shares, at",paste("$",as.character(price),sep=""),"Proceeds:",paste("$",proceeds,sep=""),sep=" ")
-        dataWeeklyT <- data.frame(
-          id = 1:length(dates),
-          start = c(dates),
-          content = c(content),
-          style=group_style,
-          className="QFTClass"
-
-        )
-
-        return(dataWeeklyT)
+      else {
+        order_type=1
       }
+      grouped_tx_DF$Shares[i]<-grouped_tx_DF$Shares[i]*order_type
+      values[i]<-grouped_tx_DF$Price[i]*grouped_tx_DF$Shares[i]
 
     }
+    grouped_tx_DF<-cbind(grouped_tx_DF,values)
+    grouped_tx<-grouped_tx_DF
+    grouped_tx_DF<-ddply(grouped_tx_DF,"Ticker",numcolwise(sum))
+    tickers_owned<-grouped_tx_DF$Ticker[which(grouped_tx_DF$Shares!=0)]
+    shares_owned<-abs(grouped_tx_DF$Shares[which(grouped_tx_DF$Shares!=0)])
 
-  )
+    current_value<-NULL
+    last_price<-NULL
+    for (i in 1:length(tickers_owned)){
+      data<-rh_quote(tickers_owned[i],account$user$authHeader)
+      last_price[i]<-data
+      current_value[i]<-last_price[i]*shares_owned[i]
+    }
+    current_positions<-data.frame(Ticker=tickers_owned,Shares=shares_owned,"Last Price"=last_price,"Market Value"=current_value)
+    individual_pl<-grouped_tx_DF
+    individual_pl$values[which(individual_pl$Shares!=0)]<-individual_pl$values[which(individual_pl$Shares!=0)]+current_positions$Market.Value
+    individual_pl$Shares<-abs(individual_pl$Shares)
+    colnames(individual_pl)[4]<-"Profit/Loss"
+
+    day_stats<-account$get_day_PnL()
+    total_equity<-as.numeric(day_stats$Equity)
+
+    equities<-sum(current_positions$Market.Value)
+    cash<-total_equity-equities
+    tickers<-c("CASH",tickers_owned)
+    market_values<-c(cash,current_positions$Market.Value)
+
+
+    allocation <- data.frame(value = market_values,
+                             Group = tickers) %>%
+      # factor levels need to be the opposite order of the cumulative sum of the values
+      mutate(Group = factor(Group, levels = rev(tickers)),
+             label = paste0(Group, " ", round(value / sum(value) * 100, 1), "%"))
+    return_list<-list(individual_pl,current_positions,allocation,grouped_tx,orders)
+    names(return_list)<-c("Individual_PL","Current_Positions","Allocation","Grouped_History","Transactions")
+    orders<<-return_list
+  },
+
+  get_options_history = function(){
+    header <- account$user$authHeader
+
+    Price<-NULL
+    Premium<-NULL
+    State<-NULL
+    Quantity<-NULL
+    Ticker<-NULL
+    Type<-NULL
+    cumulative_quantity<-NULL
+    Trigger<-NULL
+    last_transacted<-NULL
+    updated<-NULL
+    created<-NULL
+    avg_price<-NULL
+    stop_price<-NULL
+    response_category<-NULL
+    Direction<-NULL
+    NEXTURL<-"https://api.robinhood.com/options/orders/"
+    while(is.null(NEXTURL)!=T){
+      res <- httr::GET(NEXTURL, httr::add_headers(.headers=header))
+      NEXTURL<-httr::content(res)$`next`
+
+      results<-httr::content(res)$results
+      for (i in 1:length(results)) {
+        result<-results[[i]]
+
+        if(result$state=="filled"){
+          if(result$response_category=="success"||result$response_category=="unknown"){
+            State<-c(State,result$state)
+
+            Ticker<-c(Ticker,result$chain_symbol)
+            Price<-c(Price,result$price)
+            Premium<-c(Premium,result$premium)
+            Direction<-c(Direction,result$direction)
+            Quantity<-c(Quantity,result$quantity)
+            if (is.null(result$opening_strategy)){
+              Type<-c(Type,result$closing_strategy)
+            }
+            else{
+              Type<-c(Type,result$opening_strategy)
+            }
+            updated<-c(updated,result$updated_at)
+            created<-c(created,result$created_at)
+            response_category<-c(response_category,result$response_category)
+            Trigger<-c(Trigger,result$trigger)
+          }
+        }
+      }
+    }
+    Date<-updated
+    ORDERS<-data.frame(Type=Type,Ticker=Ticker,Price=Price,Premium=Premium,Quantity=Quantity,Date=Date,Direction=Direction)
+
+    options_orders<<-ORDERS
+  },
+
+  get_trade_timeline = function(ticker,orders){
+
+    grouped_tx<-orders[[4]]
+    DF<-as.data.frame(grouped_tx)
+    tickers<-DF$Ticker
+    tickers<-as.character(tickers)
+    return_idx<-which(tickers==ticker)
+    DF<-DF[return_idx,]
+    dates<-as.character.Date(DF$Date)
+    ticker<-as.character(ticker)
+    buy_style<-c("color:green;")
+    sell_style<-c("color: red;")
+    price<-NULL
+    order_type<-NULL
+    group_style<-NULL
+    for (i in 1:length(dates)){
+      if(DF$Shares[i]<0){
+        order_type[i]<-"BUY"
+        price[i]<-round((DF$values[i]/DF$Shares[i]),digits=2)
+        group_style[i]<-buy_style
+
+      }
+      else{
+        order_type[i]<-"SELL"
+        price[i]<-round((DF$values[i]/DF$Shares[i]),digits=2)
+        group_style[i]<-sell_style
+      }
+    }
+    shares<-DF$Shares
+    shares<-abs(shares)
+    proceeds<-DF$values
+
+    content<-paste(order_type,": ",shares, "shares, at",paste("$",as.character(price),sep=""),"Proceeds:",paste("$",proceeds,sep=""),sep=" ")
+    dataWeeklyT <- data.frame(
+      id = 1:length(dates),
+      start = c(dates),
+      content = c(content),
+      style=group_style,
+      className="QFTClass"
+
+    )
+
+    return(dataWeeklyT)
+  }
 
 )
 
 
 
-## PORTFOLIO CALCULATOR FUNCTIONS ###################################################
+)
+
+
+
 
 ##################
 ##################
 # Convert to R6 ##
-
-
-#' Get order history
-#'
-#' Retrieve all transation history in data.frame
-#' @param account Initialzied instance of Account class
-
-#' Get option order history
-#'
-#' Retrieve all options transation history in data.frame
-#' @param userAuthToken oauth2 token generated by rh_getAuthToken.
-
-
-
-#'@param grouped_tx Transaction history grouped by ticker. Returned from get_order_history(account)[[4]]
-#'@param ticker Ticker of interest to view timeline of historical trades
-
-##END Robinhood Functions
-#########################
-
-
 
 #' Place immediate buy order.
 #'
@@ -637,8 +616,8 @@ rh_getFundamentals<-function(ticker,account){
 #' Get the last quotes for a symbol.
 #'
 #' @param symbols The shorthand symbols.
-rh_quote<-function(ticker,account){
-  header<-account$user$authHeader
+rh_quote<-function(ticker,header){
+
   url<-paste0("https://api.robinhood.com/quotes/",toupper(ticker),"/",sep="")
   res <- httr::GET(url, httr::add_headers(.headers=header))
   res<-as.numeric(content(res)$last_trade_price)
@@ -752,12 +731,12 @@ get_balances = function(account) {
   idxOwned <- which(shares>0)
   positions <- positions[idxOwned, ]
   tickers <- rownames(positions)
-  quotes <- as.numeric(lapply(tickers, function(x) rh_quote(x,account=account)))
+  quotes <- as.numeric(lapply(tickers, function(x) rh_quote(x,header=account$user$authHeader)))
   prices <- quotes
   naPrices <- which(is.na(quotes)==TRUE)
 
   if(length(naPrices)>0){
-    newQuotes<- as.numeric(lapply(tickers[naPrices], function(x) rh_quote(x,account=account)))
+    newQuotes<- as.numeric(lapply(tickers[naPrices], function(x) rh_quote(x,header=account$user$authHeader)))
 
     prices[naPrices]<-newQuotes$last_trade_price
   }
@@ -785,9 +764,7 @@ get_balances = function(account) {
 #' @param  ticker equity ticker symbol. Must be capitalized.
 #' @param  userAuthToken oauth2 token generated by rh_getAuthToken.
 rh_getInstrumentURL <- function(ticker,account) {
-
   header <- account$user$authHeader
-
   res <- httr::GET(paste("https://api.robinhood.com/fundamentals/", ticker, "/",sep = ""), httr::add_headers(.headers=header))
   instrumentURL <- httr::content(res)$instrument
   return(instrumentURL)
@@ -807,9 +784,6 @@ rh_getInstrumentInfo <- function(instrumentURL) {
   instrumentInfo$name <- instrumentName
   return(instrumentInfo)
 }
-
-
-
 ######
 
 # rh_getOptions<-function(symbol,expiration_dates,option_type){
