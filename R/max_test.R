@@ -1,8 +1,8 @@
 source("functions.R")
+source("PlotlyCharting.R")
 
-myUserName <- ""
-myPassword <- ""
-access_robinhood(myUserName, myPassword)
+access_robinhood(rstudioapi::showPrompt(title = "Username", message = "Username", default = ""),
+                 rstudioapi::askForPassword(prompt = 'Password: '))
 
 mySymbols <- c("AAPL","GOOG","AMZN")
 robinhood_quotes(mySymbols)
