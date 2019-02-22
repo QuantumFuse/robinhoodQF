@@ -34,12 +34,12 @@ lapply(dailyData, head)
     ## 
     ## $AMZN
     ##               open    high     low   close  volume
+    ## 2018-02-21 1485.00 1503.49 1478.92 1482.92 6304351
     ## 2018-02-22 1495.36 1502.54 1475.76 1485.34 4858063
     ## 2018-02-23 1495.34 1500.00 1486.50 1500.00 4418103
     ## 2018-02-26 1509.20 1522.84 1507.00 1521.95 4954988
     ## 2018-02-27 1524.50 1526.78 1507.21 1511.98 4808776
     ## 2018-02-28 1519.51 1528.70 1512.00 1512.45 4515023
-    ## 2018-03-01 1513.60 1518.49 1465.00 1493.45 6835230
 
 ``` r
 lapply(intradayData, head)
@@ -86,7 +86,7 @@ tmpFile2 <- tempfile(fileext = ".png")
 export(p2, file = tmpFile2)
 ```
 
-![](README_files/figure-markdown_github/unnamed-chunk-4-2.png) ![Closing Price for Apple Inc.](C:\Users\danny\AppData\Local\Temp\RtmpucG1OE\file5aa8591951b9.png)
+![](README_files/figure-markdown_github/unnamed-chunk-4-2.png)
 
 ### Account Information
 
