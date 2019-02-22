@@ -6,10 +6,17 @@ source("functions.R") ### to be replaced with library(robinhoodQF)
 
 ### Login
 
-With Robinhood's recent modification to their public API, accessing data now requires authorization headers and tokens that need to be generated using existing account credentials. The access\_robinhood uses account credentials to create the required authorization headers and tokens; however, account credentials are removed from the system memory immediately after all required authorization is created.
+With Robinhood's recent modicification to their public API, accessing data now requires authorization headers and tokens that need to be generated using existing account credentials. The access\_robinhood uses account credentials to create the required authorization headers and tokens; however, account credentials are removed from the system memory immediately after all required authorization is created.
 
 ``` r
 access_robinhood(username="username", password="password")
+```
+
+Altenatively, if you are using RStudio, you could have the username and password never be stored in plain text, by using a GUI prompt to enter them.
+
+``` r
+# access_robinhood(rstudioapi::showPrompt(title = "Username", message = "Username", default = ""),
+#                  rstudioapi::askForPassword(prompt = 'Password: '))
 ```
 
 The access\_robinhood function will create a list called robinhoodUser, containing two R6 classes that underly most global methods in the robinhoodQF package. The robindhoodQF package is designed so that you will never need to directly interact with this list or its contents.
@@ -619,6 +626,7 @@ volume
 </tr>
 </tbody>
 </table>
+
 ### Charting
 
 The robinhoodQF package allows you to build interactive plotly charts for visualizing price series and plotting technical indicators.
@@ -633,7 +641,7 @@ tmpFile1 <- tempfile(fileext = ".png")
 export(p1, file = tmpFile1)
 ```
 
-![](README_files/figure-markdown_github/unnamed-chunk-4-1.png)
+![](README_files/figure-markdown_github/unnamed-chunk-5-1.png)
 
 ``` r
 ## plot closing prices with volume
@@ -642,7 +650,7 @@ tmpFile2 <- tempfile(fileext = ".png")
 export(p2, file = tmpFile2)
 ```
 
-![](README_files/figure-markdown_github/unnamed-chunk-4-2.png)
+![](README_files/figure-markdown_github/unnamed-chunk-5-2.png)
 
 ### Account Information
 
@@ -665,7 +673,7 @@ holdings<-get_equity_holdings()
 holdings$table%>%as.data.frame()%>%datatable()
 ```
 
-![](README_files/figure-markdown_github/unnamed-chunk-5-1.png)
+![](README_files/figure-markdown_github/unnamed-chunk-6-1.png)
 
 ``` r
 holdings$tickers
@@ -677,13 +685,13 @@ holdings$tickers
 robinhoodUser$account$positionsTable%>%as.data.frame()%>%datatable()
 ```
 
-![](README_files/figure-markdown_github/unnamed-chunk-6-1.png)
+![](README_files/figure-markdown_github/unnamed-chunk-7-1.png)
 
 ``` r
 robinhoodUser$account$optionsPositionsTable%>%as.data.frame()%>%datatable()
 ```
 
-![](README_files/figure-markdown_github/unnamed-chunk-7-1.png)
+![](README_files/figure-markdown_github/unnamed-chunk-8-1.png)
 
 ``` r
 robinhoodUser$account$portfolioEquity
