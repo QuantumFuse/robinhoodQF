@@ -1,3 +1,5 @@
+### robinhoodQF
+
 ``` r
 source("functions.R") ### to be replaced with library(robinhoodQF)
 ```
@@ -17,52 +19,606 @@ The access\_robinhood function will create a list called robinhoodUser, containi
 The robinhoodQF package allows you to download the last year of daily data, as well as the last week of 5 minute tick data, from the Robinhood API for a list of shorthand ticker symbols:
 
 ``` r
+library(formattable)
+source("stock_formattable.R")
 mySymbols <- c("AAPL","AMZN")
 dailyData <- robinhood_daily_historicals(symbols=mySymbols)
 intradayData <- robinhood_intraday_historicals(symbols=mySymbols)
-lapply(dailyData, head)
+dailyData$AAPL%>%head()%>%as.data.frame()%>%make_stock_formattable()
 ```
 
-    ## $AAPL
-    ##              open    high    low  close   volume
-    ## 2018-02-21 172.83 174.120 171.01 171.07 37471623
-    ## 2018-02-22 171.80 173.950 171.71 172.50 30991940
-    ## 2018-02-23 173.67 175.650 173.54 175.50 33812360
-    ## 2018-02-26 176.35 179.390 176.21 178.97 38162174
-    ## 2018-02-27 179.10 180.480 178.16 178.39 38928125
-    ## 2018-02-28 179.26 180.615 178.05 178.12 37782138
-    ## 
-    ## $AMZN
-    ##               open    high     low   close  volume
-    ## 2018-02-21 1485.00 1503.49 1478.92 1482.92 6304351
-    ## 2018-02-22 1495.36 1502.54 1475.76 1485.34 4858063
-    ## 2018-02-23 1495.34 1500.00 1486.50 1500.00 4418103
-    ## 2018-02-26 1509.20 1522.84 1507.00 1521.95 4954988
-    ## 2018-02-27 1524.50 1526.78 1507.21 1511.98 4808776
-    ## 2018-02-28 1519.51 1528.70 1512.00 1512.45 4515023
-
+<table class="table table-condensed">
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+open
+</th>
+<th style="text-align:right;">
+high
+</th>
+<th style="text-align:right;">
+low
+</th>
+<th style="text-align:right;">
+close
+</th>
+<th style="text-align:right;">
+volume
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+2018-02-21
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 172.83</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 174.12</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 171.01</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: white; background-color: #FF6666">$ 171.07</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">37471623</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2018-02-22
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 171.80</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 173.95</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 171.71</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: white; background-color: #66b266">$ 172.50</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">30991940</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2018-02-23
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 173.67</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 175.65</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 173.54</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: white; background-color: #66b266">$ 175.50</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">33812360</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2018-02-26
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 176.35</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 179.39</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 176.21</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: white; background-color: #66b266">$ 178.97</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">38162174</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2018-02-27
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 179.10</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 180.48</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 178.16</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: white; background-color: #FF6666">$ 178.39</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">38928125</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2018-02-28
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 179.26</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 180.62</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 178.05</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: white; background-color: #FF6666">$ 178.12</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">37782138</span>
+</td>
+</tr>
+</tbody>
+</table>
 ``` r
-lapply(intradayData, head)
+dailyData$AMZN%>%head()%>%as.data.frame()%>%make_stock_formattable()
 ```
 
-    ## $AAPL
-    ##                       open   high     low    close  volume
-    ## 2019-02-15 14:30:00 171.22 171.70 171.000 171.1316 2412697
-    ## 2019-02-15 14:35:00 171.13 171.23 170.490 171.0600  273892
-    ## 2019-02-15 14:40:00 171.08 171.08 170.340 170.3650  230501
-    ## 2019-02-15 14:45:00 170.40 170.85 170.130 170.2200  279939
-    ## 2019-02-15 14:50:00 170.19 170.20 169.760 169.9200  363468
-    ## 2019-02-15 14:55:00 169.92 170.56 169.905 170.4600  223322
-    ## 
-    ## $AMZN
-    ##                         open     high      low    close volume
-    ## 2019-02-15 14:30:00 1627.090 1628.910 1621.510 1622.342 233071
-    ## 2019-02-15 14:35:00 1621.620 1622.550 1615.000 1620.220  46206
-    ## 2019-02-15 14:40:00 1620.198 1620.198 1613.995 1614.540  41530
-    ## 2019-02-15 14:45:00 1615.328 1620.490 1614.210 1615.535  32880
-    ## 2019-02-15 14:50:00 1615.588 1615.588 1612.000 1612.680  31449
-    ## 2019-02-15 14:55:00 1612.495 1615.590 1611.690 1612.260  27608
+<table class="table table-condensed">
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+open
+</th>
+<th style="text-align:right;">
+high
+</th>
+<th style="text-align:right;">
+low
+</th>
+<th style="text-align:right;">
+close
+</th>
+<th style="text-align:right;">
+volume
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+2018-02-21
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 1,485.00</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 1,503.49</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 1,478.92</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: white; background-color: #FF6666">$ 1,482.92</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">6304351</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2018-02-22
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 1,495.36</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 1,502.54</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 1,475.76</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: white; background-color: #FF6666">$ 1,485.34</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">4858063</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2018-02-23
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 1,495.34</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 1,500.00</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 1,486.50</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: white; background-color: #66b266">$ 1,500.00</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">4418103</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2018-02-26
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 1,509.20</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 1,522.84</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 1,507.00</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: white; background-color: #66b266">$ 1,521.95</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">4954988</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2018-02-27
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 1,524.50</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 1,526.78</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 1,507.21</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: white; background-color: #FF6666">$ 1,511.98</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">4808776</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2018-02-28
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 1,519.51</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 1,528.70</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 1,512.00</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: white; background-color: #FF6666">$ 1,512.45</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">4515023</span>
+</td>
+</tr>
+</tbody>
+</table>
+``` r
+intradayData$AAPL%>%head()%>%as.data.frame()%>%make_stock_formattable()
+```
 
+<table class="table table-condensed">
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+open
+</th>
+<th style="text-align:right;">
+high
+</th>
+<th style="text-align:right;">
+low
+</th>
+<th style="text-align:right;">
+close
+</th>
+<th style="text-align:right;">
+volume
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+2019-02-15 14:30:00
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 171.22</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 171.70</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 171.00</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: white; background-color: #FF6666">$ 171.13</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">2412697</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2019-02-15 14:35:00
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 171.13</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 171.23</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 170.49</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: white; background-color: #FF6666">$ 171.06</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">273892</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2019-02-15 14:40:00
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 171.08</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 171.08</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 170.34</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: white; background-color: #FF6666">$ 170.37</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">230501</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2019-02-15 14:45:00
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 170.40</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 170.85</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 170.13</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: white; background-color: #FF6666">$ 170.22</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">279939</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2019-02-15 14:50:00
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 170.19</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 170.20</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 169.76</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: white; background-color: #FF6666">$ 169.92</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">363468</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2019-02-15 14:55:00
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 169.92</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 170.56</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 169.91</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: white; background-color: #66b266">$ 170.46</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">223322</span>
+</td>
+</tr>
+</tbody>
+</table>
+``` r
+intradayData$AMZN%>%head()%>%as.data.frame()%>%make_stock_formattable()
+```
+
+<table class="table table-condensed">
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+open
+</th>
+<th style="text-align:right;">
+high
+</th>
+<th style="text-align:right;">
+low
+</th>
+<th style="text-align:right;">
+close
+</th>
+<th style="text-align:right;">
+volume
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+2019-02-15 14:30:00
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 1,627.09</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 1,628.91</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 1,621.51</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: white; background-color: #FF6666">$ 1,622.34</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">233071</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2019-02-15 14:35:00
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 1,621.62</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 1,622.55</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 1,615.00</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: white; background-color: #FF6666">$ 1,620.22</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">46206</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2019-02-15 14:40:00
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 1,620.20</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 1,620.20</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 1,613.99</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: white; background-color: #FF6666">$ 1,614.54</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">41530</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2019-02-15 14:45:00
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 1,615.33</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 1,620.49</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 1,614.21</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: white; background-color: #66b266">$ 1,615.54</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">32880</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2019-02-15 14:50:00
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 1,615.59</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 1,615.59</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 1,612.00</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: white; background-color: #FF6666">$ 1,612.68</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">31449</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2019-02-15 14:55:00
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 1,612.49</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 1,615.59</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 1,611.69</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: white; background-color: #FF6666">$ 1,612.26</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">27608</span>
+</td>
+</tr>
+</tbody>
+</table>
 ### Charting
 
 The robinhoodQF package allows you to build interactive plotly charts for visualizing price series and plotting technical indicators.
@@ -104,22 +660,18 @@ get_watchlist_tickers()
     ## [71] "AMAT" "CSCO" "AKAM" "MLNX" "QCOM" "AGNC" "AAPL" "F"    "OCSL" "KO"
 
 ``` r
-get_equity_holdings()
+holdings<-get_equity_holdings()
+holdings$table
 ```
 
-    ## $table
-    ##                                        name quantity average_price
-    ## CZZ                           Cosan Limited       30       10.6600
-    ## IEMG iShares Core MSCI Emerging Markets ETF       20       49.9320
-    ## SQQQ           ProShares UltraPro Short QQQ       18       11.8943
-    ## XLF       Financial Select Sector SPDR Fund       35       28.0900
-    ## AMZN          Amazon.com, Inc. Common Stock        1     1636.5000
-    ## MSFT     Microsoft Corporation Common Stock       10      104.2407
-    ## BABA          Alibaba Group Holding Limited        3      166.6572
-    ## V                                 VISA Inc.        7      135.2506
-    ## NTNX     Nutanix, Inc. Class A Common Stock       10       50.1627
-    ## 
-    ## $tickers
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["name"],"name":[1],"type":["chr"],"align":["left"]},{"label":["quantity"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["average_price"],"name":[3],"type":["dbl"],"align":["right"]}],"data":[{"1":"Cosan Limited","2":"30","3":"10.6600","_rn_":"CZZ"},{"1":"iShares Core MSCI Emerging Markets ETF","2":"20","3":"49.9320","_rn_":"IEMG"},{"1":"ProShares UltraPro Short QQQ","2":"18","3":"11.8943","_rn_":"SQQQ"},{"1":"Financial Select Sector SPDR Fund","2":"35","3":"28.0900","_rn_":"XLF"},{"1":"Amazon.com, Inc. Common Stock","2":"1","3":"1636.5000","_rn_":"AMZN"},{"1":"Microsoft Corporation Common Stock","2":"10","3":"104.2407","_rn_":"MSFT"},{"1":"Alibaba Group Holding Limited","2":"3","3":"166.6572","_rn_":"BABA"},{"1":"VISA Inc.","2":"7","3":"135.2506","_rn_":"V"},{"1":"Nutanix, Inc. Class A Common Stock","2":"10","3":"50.1627","_rn_":"NTNX"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+
+``` r
+holdings$tickers
+```
+
     ##  [1] "XBI"  "CZZ"  "IEMG" "SQQQ" "XLF"  "AMZN" "MSFT" "BABA" "V"    "NTNX"
 
 ``` r
