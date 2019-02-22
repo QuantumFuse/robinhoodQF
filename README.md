@@ -6,7 +6,7 @@ source("functions.R") ### to be replaced with library(robinhoodQF)
 
 ### Login
 
-With Robinhood's recent modicification to their public API, accessing data now requires authorization headers and tokens that need to be generated using existing account credentials. The access\_robinhood uses account credentials to create the required authorization headers and tokens; however, account credentials are removed from the system memory immediately after all required authorization is created.
+With Robinhood's recent modification to their public API, accessing data now requires authorization headers and tokens that need to be generated using existing account credentials. The access\_robinhood uses account credentials to create the required authorization headers and tokens; however, account credentials are removed from the system memory immediately after all required authorization is created.
 
 ``` r
 access_robinhood(username="username", password="password")
@@ -201,26 +201,6 @@ volume
 <tbody>
 <tr>
 <td style="text-align:left;">
-2018-02-21
-</td>
-<td style="text-align:right;">
-<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 1,485.00</span>
-</td>
-<td style="text-align:right;">
-<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 1,503.49</span>
-</td>
-<td style="text-align:right;">
-<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 1,478.92</span>
-</td>
-<td style="text-align:right;">
-<span style="display: block; border-radius: 1px; padding-right: 1px; color: white; background-color: #FF6666">$ 1,482.92</span>
-</td>
-<td style="text-align:right;">
-<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">6304351</span>
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
 2018-02-22
 </td>
 <td style="text-align:right;">
@@ -317,6 +297,26 @@ volume
 </td>
 <td style="text-align:right;">
 <span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">4515023</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2018-03-01
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 1,513.60</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 1,518.49</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">$ 1,465.00</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: white; background-color: #FF6666">$ 1,493.45</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; border-radius: 1px; padding-right: 1px; color: black; background-color: white">6835230</span>
 </td>
 </tr>
 </tbody>
@@ -688,3 +688,5 @@ robinhoodUser$account$optionsPositionsTable%>%as.data.frame()%>%datatable()
 ``` r
 robinhoodUser$account$portfolioEquity
 ```
+
+    ## NULL
