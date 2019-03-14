@@ -1,3 +1,7 @@
+#' Account R6 Class
+#'
+#' Create an instance of the R6 Account class.
+#' @param login  Initialized R6 Login class instance.
 Account <- R6::R6Class(
   
   classname = "Account",  
@@ -10,8 +14,8 @@ Account <- R6::R6Class(
     positionsList = NULL,
     positionsTable = NULL,
     optionsPositionsTable = NULL,
-    
     portfolioEquity = NULL,
+    day_stats=NULL,
     
     initialize = function(login){
       stopifnot(inherits(login,"Login"))
@@ -19,6 +23,7 @@ Account <- R6::R6Class(
       private$create_positions_table()
       private$get_options_positions_table()
       private$get_portfolio_equity()
+      private$get_day_PnL()
     }
     
   ),
@@ -79,6 +84,24 @@ Account <- R6::R6Class(
         price = unlist(lapply(responseResults, function(x) as.numeric(x$average_price)))
       )
       
+    },
+    get_day_PnL = function(){
+      portfolioURL <- paste("https://api.robinhood.com/accounts/", self$user$accountNumber, "/portfolio/", sep = "")
+      response <- httr::GET(portfolioURL, httr::add_headers(.headers=self$user$authHeader))
+      response <- httr::content(response)
+      lastEquity <- response$adjusted_equity_previous_close
+      equity <- response$equity
+      
+      if(is.null(equity)){
+        equity <- response$extended_hours_equity
+      }
+      
+      equity <- as.numeric(equity)
+      lastEquity <- as.numeric(lastEquity)
+      change <- equity-lastEquity
+      pctChange <- (change/lastEquity)*100
+      dayChange <- data.frame("Change($)"=change, "Percent Change"=pctChange,"Equity"=equity)
+      self$day_stats <- dayChange
     }
   )
   

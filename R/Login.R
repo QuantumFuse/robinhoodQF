@@ -3,8 +3,6 @@
 #' Create an instance of the R6 Login Class. Get oauth2 login token, account number, and other login params. Passed to all API requests.
 #' @param username_ Robinhood login username. NOT email.
 #' @param password_ Robinhood login password. Can only contain letters and numbers in plaintext.
-#' 
-#' 
 Login <- R6::R6Class(
   
   classname = "Login", 

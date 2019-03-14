@@ -38,9 +38,9 @@ RobinhoodQuotes <- R6::R6Class(
       
     },
     
-    get_intraday_series =  function(symbol, bounds="regular"){
+    get_intraday_series =  function(symbol, span, bounds="regular"){
       
-      private$build_historical_url(symbol, "5minute", "week", bounds)
+      private$build_historical_url(symbol, interval="5minute",span=span, bounds=bounds)
       response <- httr::GET(url=private$urlHistorical, httr::add_headers(.headers=self$userAccount$user$authHeader))
       
       if(httr::http_error(response))
@@ -76,14 +76,14 @@ RobinhoodQuotes <- R6::R6Class(
       
     }, 
     
-    get_intraday_historicals = function(symbols, bounds="regular") {
+    get_intraday_historicals = function(symbols, span, bounds="regular") {
       symbols <- as.list(symbols)
       
       if(length(symbols) == 1){
-        return(self$get_intraday_series(symbols[[1]], bounds))
+        return(self$get_intraday_series(symbols[[1]], span, bounds))
       }
       
-      toReturn <- lapply(symbols, function(x) self$get_intraday_series(x, bounds))
+      toReturn <- lapply(symbols, function(x) self$get_intraday_series(x, span, bounds))
       names(toReturn) <- symbols
       return(toReturn)
       
@@ -120,10 +120,3 @@ RobinhoodQuotes <- R6::R6Class(
     }
   )
 )
-
-
-
-
-
-
-
