@@ -239,7 +239,50 @@ Orders <- R6::R6Class(
       Date<-updated
       ORDERS<-data.frame(Type=Type,Ticker=Ticker,Price=Price,Premium=Premium,Quantity=Quantity,Date=Date,Direction=Direction)
       
-      self$options_orders <- ORDERS
+      options_history<-ORDERS
+      
+      options_history$Premium<-as.numeric(as.character(options_history$Premium))
+      options_history$Quantity<-as.numeric(as.character(options_history$Quantity))
+      for (i in 1:length(options_history$Direction)){if (options_history$Direction[i]=="debit"){options_history$Premium[i]<-options_history$Premium[i]*-1}}
+      Value<-options_history$Premium*options_history$Quantity
+      options_history<-cbind(options_history,Value)
+      #######################################################
+      
+      values<-NULL
+      grouped_tx_DF<-ddply(options_history,"Ticker",rbind)
+      
+      grouped_tx_DF$Shares<-grouped_tx_DF$Quantity
+      
+      for (i in 1:length(grouped_tx_DF$Value)){
+        if (grouped_tx_DF$Value[i] < 0){
+          order_type=-1
+        }
+        else {
+          order_type=1
+        }
+        grouped_tx_DF$Quantity[i]<-grouped_tx_DF$Quantity[i]*order_type
+      }
+      
+      grouped_tx_DF<-ddply(grouped_tx_DF,"Ticker",numcolwise(sum))
+      
+      ###########################################################
+      # * insert code to get quotes for contracts currently owned
+      ###########################################################
+      idx_owned<-which(grouped_tx_DF$Ticker%in%self$account$optionsPositionsTable$ticker)
+      tickers_owned<-grouped_tx_DF$Ticker[idx_owned]
+      # * doesn't account for options that opened with multiple legs in the order but closed with each leg in a separate order  
+      expired_idx<-which(grouped_tx_DF$Quantity!=0 & (grouped_tx_DF$Ticker%in%tickers_owned==FALSE))
+      current_value<-NULL
+      
+      ### Manual fix
+      #grouped_tx_DF[idx_owned,]$Value<-grouped_tx_DF[idx_owned,]$Value+*current_value_of_contracts_owned*
+      #grouped_tx_DF[idx_owned,]$Value<-grouped_tx_DF[idx_owned,]$Value+263
+      
+      
+      individual_options_pnl<-grouped_tx_DF[,c(1,4)]
+      toReturn<-list("transactions"=options_history,"pnl"=individual_options_pnl)
+      self$options_orders <- toReturn
+      
     }
     
   )
