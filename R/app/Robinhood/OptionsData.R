@@ -32,8 +32,17 @@ get_option_chain<-function(ticker,header){
   url<-paste0("https://api.robinhood.com/options/chains/?equity_instrument_ids=",instrumentID)
   res<-GET(url,add_headers(.headers=header))
   results<-content(res)$results
-  #results<-results[[1]]
-  results<-results[[2]]
+  idx_keep<-NULL
+  if(length(results)>1){
+    for (i in 1:length(results)){
+      if(results[[i]]$symbol==ticker){
+        idx_keep<-i
+      }
+    }
+    results<-results[[idx_keep]]
+  }
+  else{results<-results[[1]]}
+  
   
   results_list_names<-c("can_open_position","symbol","trade_value_multiplier","underlying_instruments",
                         "expiration_dates","cash_component","min_ticks","id")
@@ -157,11 +166,30 @@ get_options_strategy_quote<-function(instrument_urls,types,ratios){
   return(list(quote=quote_df,legs=contract_legs))
 }
 
+
 ## Return entire dataset for all contracts in a given chain (all expiries and types)
-all_options_data_for_chain<-function(ticker,header){
+all_options_data_for_chain<-function(ticker,header,IV=.35,n_expiry=20){
   options_instruments_chain<-options_instruments_in_chain(ticker,header)
   instrument<-options_instruments_chain$urls
+  
+  
+  strikes<-options_instruments_chain$options_in_chain$Strike
+  strikes<-as.numeric(strikes)
+  S<-rh_quote(ticker,header)
+  deltas<-percent((S-strikes)/S)
+  strike_idx<-which(abs(deltas)<=IV)
+  
+  K_filt_instrument<-instrument[strike_idx]
+  
+  opChainData<-options_instruments_chain$options_in_chain[strike_idx,]
+  
+  expiries<-opChainData$Expiry
+  unique_expiries<-sort(unique(expiries))
+  topn_expiries<-head(unique_expiries,n=n_expiry)
+  T_idx <- which(expiries%in%topn_expiries)
 
+  instrument<-K_filt_instrument[T_idx]
+  
   #### Chunk instrument url - 50 urls per request
   max <- 50
   x <- seq_along(instrument)
@@ -192,6 +220,7 @@ all_options_data_for_chain<-function(ticker,header){
         dat<-as.data.frame(t(dat))
         dat<-subset(dat, select=-c(instrument))
         option_dat<-cbind(instrument_info,dat)
+        print(j)
         option_data<-rbind(option_data,option_dat)
         
       }

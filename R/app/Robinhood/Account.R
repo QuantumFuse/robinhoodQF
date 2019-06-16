@@ -90,10 +90,10 @@ Account <- R6::R6Class(
       response <- httr::GET(portfolioURL, httr::add_headers(.headers=self$user$authHeader))
       response <- httr::content(response)
       lastEquity <- response$adjusted_equity_previous_close
-      equity <- response$equity
+      equity <- response$extended_hours_equity
       
       if(is.null(equity)){
-        equity <- response$extended_hours_equity
+        equity <- response$equity
       }
       
       equity <- as.numeric(equity)
